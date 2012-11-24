@@ -1,4 +1,0 @@
-asyncqueue
-==========
-
-a async queue
