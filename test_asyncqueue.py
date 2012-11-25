@@ -8,9 +8,9 @@ import asyncqueue
 
 async = asyncqueue.queue(["mail", "vm"])
 
-@async.enqueue("vm")
+@async.enqueue("greet")
 def test1():
-    return {"vm": "create"}
+    return {"greetings": "hello"}
 
 class AsyncqueueTestCase(unittest.TestCase):
 

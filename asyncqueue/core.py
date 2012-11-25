@@ -26,8 +26,8 @@ class Queue(object):
             raise WrongMessageContent
 
     def enqueue(self, message_type, safety=True):
-        def _asyn(function):
-            def __asyn(*arg, **kwarg):
+        def _enqueue(function):
+            def __enqueue(*arg, **kwarg):
                 res = function(*arg, **kwarg)
                 if safety:
                     self._check_valid(message_type, res)
@@ -39,8 +39,8 @@ class Queue(object):
                     except:
                         pass
                 return res
-            return __asyn
-        return _asyn
+            return __enqueue
+        return _enqueue
 
     def dequeue(self, qname):
         return self._redis.dequeue(qname)
