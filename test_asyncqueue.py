@@ -8,15 +8,13 @@ import asyncqueue
 
 async = asyncqueue.Queue(["mail", "vm"])
 
-@async.send("vm")
+@async.enqueue("vm")
 def test1():
     return {"vm": "create"}
 
 class AsyncqueueTestCase(unittest.TestCase):
 
     def setUp(self):
-
-
         pass
 
     def tearDown(self):
@@ -24,7 +22,7 @@ class AsyncqueueTestCase(unittest.TestCase):
 
     def test_print_message(self):
         test1()
-        m = asyncqueue.dequeue("vm")
+        m = async.dequeue("vm")
         print "m", m
         self.assertNotEqual(m, None)
 

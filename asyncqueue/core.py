@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from asyncqueue import enqueue
+from asyncqueue.queue import Redis
 
 __title__ = "asyncqueue"
 __version__ = "0.0.1"
@@ -13,22 +13,40 @@ __docformat__ = "restructuredtext"
 
 class Queue(object):
 
-    def __init__(self, allowed=list()):
+    def __init__(self, allowed=list(), redis_host="localhost", redis_port=6379):
         self._allowed = list(allowed)
+        self._redis = Redis(redis_host, redis_port)
 
-    def send(self, message_type, safety=False):
+    def _check_valid(self, _type, content):
+        if _type in self._allowed and content:
+            return True
+        elif _type not in self._allowed:
+            raise UnSupportedMessageType
+        elif not content:
+            raise WrongMessageContent
+
+    def enqueue(self, message_type, safety=True):
         def _asyn(function):
             def __asyn(*arg, **kwarg):
                 res = function(*arg, **kwarg)
-                if message_type in self._allowed:
-                    enqueue(message_type, res)
+                if safety:
+                    self._check_valid(message_type, res)
+                    self._redis.enqueue(message_type, res)
                 else:
-                    if safety:
-                        raise UnSupportedMessageType
-                    return res
+                    try:
+                        self._check_valid(message_type, res)
+                        self._redis.enqueue(message_type, res)
+                    except:
+                        pass
+                return res
             return __asyn
         return _asyn
+
+    def dequeue(self, qname):
+        return self._redis.dequeue(qname)
 
 class UnSupportedMessageType(Exception):
     "unsupported message type"
 
+class WrongMessageContent(Exception):
+    "wrong message content"
