@@ -10,7 +10,7 @@ usage:
 
     import asyncqueue
 
-    async = asyncqueue.Queue(["mail"], redis_host="localhost", redis_port=6379)
+    async = asyncqueue.queue(["mail"], redis_host="localhost", redis_port=6379)
 
     @async.enqueue("mail")
     def send_mail():
