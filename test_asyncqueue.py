@@ -6,7 +6,7 @@
 import unittest
 import asyncqueue
 
-async = asyncqueue.Queue(["mail", "vm"])
+async = asyncqueue.queue(["mail", "vm"])
 
 @async.enqueue("vm")
 def test1():
