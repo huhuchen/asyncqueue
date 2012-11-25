@@ -1,25 +1,52 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import redis
-import json
+from asyncqueue._redis import Redis
 
-class Redis(object):
+__title__ = "asyncqueue"
+__version__ = "0.0.1"
+__author__ = "huhuchen"
+__license__ = "MIT"
+__copyright__ = "Copyright 2012 huhuchen"
+__docformat__ = "restructuredtext"
 
-    def __init__(self, host="localhost", port=6379):
-        self._host = host
-        self._port = port
-        self.redis_cursor = None
 
-    def conn(self):
-        pool = redis.ConnectionPool(host=self._host, port=self._port, db=0)
-        self.redis_cursor = redis.Redis(connection_pool=pool)
+class Queue(object):
 
-    def enqueue(self, qname, data):
-        self.conn()
-        self.redis_cursor.rpush("queue:%s"%qname, json.dumps(data))
+    def __init__(self, allowed=list(), redis_host="localhost", redis_port=6379):
+        self._allowed = list(allowed)
+        self._redis = Redis(redis_host, redis_port)
+
+    def _check_valid(self, _type, content):
+        if _type in self._allowed and content:
+            return True
+        elif _type not in self._allowed:
+            raise UnSupportedMessageType
+        elif not content:
+            raise WrongMessageContent
+
+    def enqueue(self, message_type, safety=True):
+        def _asyn(function):
+            def __asyn(*arg, **kwarg):
+                res = function(*arg, **kwarg)
+                if safety:
+                    self._check_valid(message_type, res)
+                    self._redis.enqueue(message_type, res)
+                else:
+                    try:
+                        self._check_valid(message_type, res)
+                        self._redis.enqueue(message_type, res)
+                    except:
+                        pass
+                return res
+            return __asyn
+        return _asyn
 
     def dequeue(self, qname):
-        self.conn()
-        r = self.redis_cursor.blpop("queue:%s"%qname)
-        return json.loads(r[1])
+        return self._redis.dequeue(qname)
+
+class UnSupportedMessageType(Exception):
+    "unsupported message type"
+
+class WrongMessageContent(Exception):
+    "wrong message content"

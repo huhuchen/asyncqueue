@@ -1,10 +1,13 @@
 ======================
+
 asyncqueue: an asynchronous message queue
 
 =====================
+
 usage:
 
 :: 
+
     import asyncqueue
 
     async = asyncqueue.Queue(["mail"], redis_host="localhost", redis_port=6379)

@@ -2,5 +2,4 @@
 # -*- coding: utf-8 -*-
 """asyncqueue"""
 
-from asyncqueue.queue import Redis
-from asyncqueue.core import (Queue, __version__, UnSupportedMessageType)
+from asyncqueue.queue import (Queue, __version__, UnSupportedMessageType)
