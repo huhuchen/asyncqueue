@@ -3,14 +3,33 @@
 
 """tests for asyncqueue"""
 
+from time import sleep
 import unittest
-import asyncqueue
+from  asyncqueue import queue
 
-async = asyncqueue.queue(["mail", "vm"])
+async = queue(["greet",])
 
-@async.enqueue("greet")
-def test1():
-    return {"greetings": "hello"}
+@async("greet")
+def greet_friends(friend_name):
+    greetings = "come on! %s" % friend_name
+    return {"greetings": greetings}
+
+@async("greet")
+def greet_teacher(teacher_name):
+    greetings = "hello! %s" % teacher_name
+    return {"greetings": greetings}
+
+def handler():
+    friend_name = "Tom"
+
+    greet_friends.delay(friend_name)
+
+    teacher_name = "John"
+
+    greet_teacher.delay(teacher_name)
+
+    while True:
+        print  async.worker("greet")
 
 class AsyncqueueTestCase(unittest.TestCase):
 
@@ -20,12 +39,7 @@ class AsyncqueueTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_print_message(self):
-        test1()
-        m = async.dequeue("vm")
-        print "m", m
-        self.assertNotEqual(m, None)
+    def test_handler(self):
+        handler()
 
 
-if __name__ == "__main__":
-    unittest.main()

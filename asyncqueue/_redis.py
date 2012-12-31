@@ -17,9 +17,15 @@ class Redis(object):
 
     def enqueue(self, qname, data):
         self.conn()
-        self.redis_cursor.rpush("queue:%s"%qname, json.dumps(data))
+        self.redis_cursor.rpush(qname, json.dumps(data))
 
     def dequeue(self, qname):
         self.conn()
-        r = self.redis_cursor.blpop("queue:%s"%qname)
+        r = self.redis_cursor.blpop(qname)
         return json.loads(r[1])
+
+if __name__ == "__main__":
+    while True:
+        qname = "asyncqueue:greet"
+        r = Redis()
+        print r.dequeue(qname)
