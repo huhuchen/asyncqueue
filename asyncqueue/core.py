@@ -16,26 +16,24 @@ class Queue(object):
 
     redis_queue_namespace_prefix = "asyncqueue"
 
-    def __init__(self, allowed=list(), redis_host="localhost", redis_port=6379):
-        self._allowed = list(allowed)
+    def __init__(self, message_type, redis_host="localhost", redis_port=6379):
         self._connection = Redis(redis_host, redis_port)
         self._key = None
-        self._message_type = None
+        self._message_type = message_type
 
-    def _check_type_valid(self, _type):
-        if _type in self._allowed:
-            return True
-        elif _type not in self._allowed:
-            raise UnSupportedMessageType
-        return False
+    ##def _check_type_valid(self, _type):
+    ##    if _type in self._allowed:
+    ##        return True
+    ##    elif _type not in self._allowed:
+    ##        raise UnSupportedMessageType
+    ##    return False
 
     @property
     def key(self):
         self._key = "%s:%s" % (self.redis_queue_namespace_prefix, self._message_type)
         return self._key
 
-    def __call__(self, message_type):
-        self._message_type = message_type
+    def __call__(self):
         def _func(function):
             def __func(*arg, **kwarg):
                 job = Job.create(function, arg, kwarg)
@@ -45,17 +43,17 @@ class Queue(object):
         return _func
 
     def enqueue_job(self, job):
-        print "key", self.key
         self._connection.enqueue(self.key, job._data)
 
-    def dequeue_job(self, qname):
-        key = "%s:%s" % (self.redis_queue_namespace_prefix, qname)
+    def dequeue_job(self):
+        print "message_type", self._message_type
+        key = "%s:%s" % (self.redis_queue_namespace_prefix, self._message_type)
         pickle_data = self._connection.dequeue(key)
         if pickle_data:
             return Job.fetch(pickle_data)
 
-    def worker(self, qname):
-        job = self.dequeue_job(qname)
+    def worker(self):
+        job = self.dequeue_job()
         if job:
             return job.perform()
 

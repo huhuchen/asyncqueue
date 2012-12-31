@@ -44,7 +44,7 @@ class Job(object):
         self._data = dumps((self._func_name, self._args, self._kwargs))
 
     def perform(self):
-        module_name, func_name = self._func_name.split('.')
+        module_name, func_name = self._func_name.rsplit('.', 1)
         module = importlib.import_module(module_name)
         func = getattr(module, func_name)
         return func(*self._args, **self._kwargs)
