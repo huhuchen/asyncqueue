@@ -21,13 +21,6 @@ class Queue(object):
         self._key = None
         self._message_type = message_type
 
-    ##def _check_type_valid(self, _type):
-    ##    if _type in self._allowed:
-    ##        return True
-    ##    elif _type not in self._allowed:
-    ##        raise UnSupportedMessageType
-    ##    return False
-
     @property
     def key(self):
         self._key = "%s:%s" % (self.redis_queue_namespace_prefix, self._message_type)
@@ -46,18 +39,15 @@ class Queue(object):
         self._connection.enqueue(self.key, job._data)
 
     def dequeue_job(self):
-        print "message_type", self._message_type
         key = "%s:%s" % (self.redis_queue_namespace_prefix, self._message_type)
-        pickle_data = self._connection.dequeue(key)
-        if pickle_data:
-            return Job.fetch(pickle_data)
+        data = self._connection.dequeue(key)
+        if data:
+            return Job.fetch(data)
 
     def worker(self):
         job = self.dequeue_job()
         if job:
             return job.perform()
-
-
 
 
 class UnSupportedMessageType(Exception):
