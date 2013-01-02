@@ -2,5 +2,7 @@
 # -*- coding: utf-8 -*-
 """asyncqueue"""
 
-from asyncqueue.core import ( __version__, UnSupportedMessageType)
-from asyncqueue.core import Queue as queue
+from asyncqueue.core import __version__
+from .core import Queue
+
+__version__ = __version__

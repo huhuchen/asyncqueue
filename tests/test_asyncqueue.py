@@ -4,10 +4,11 @@
 """tests for asyncqueue"""
 
 from tests import AsyncqueueTestCase
-from asyncqueue import queue
+from asyncqueue import Queue
 
-mail_queue = queue("mail")
-greet_queue = queue("greet")
+mail_queue = Queue("mail")
+greet_queue = Queue("greet")
+notice_queue = Queue("notice")
 
 @greet_queue()
 def greet_friends(friend_name):
@@ -19,18 +20,29 @@ def send_mail(subject, content, sender, destination):
     mail = {"subject": subject, "content": content, "sender": sender, "destination": destination}
     return mail
 
-def handler():
-    friend_name = "Tom"
-    greet_friends.delay(friend_name)
+class Notice(object):
 
-    send_mail.delay("welcome you!", "nice to meet you", "huhuchen@github", "god@heaven")
+    def __init__(self):
+        pass
 
-    print mail_queue.worker()
-    print greet_queue.worker()
+    @notice_queue()
+    def remind_user(self, username):
+        return {"username": username}
 
 class QueueTestCase(AsyncqueueTestCase):
 
-    def test_handler(self):
-        handler()
+    def test_function_job(self):
+        friend_name = "Tom"
+        greet_friends.delay(friend_name)
 
+        send_mail.delay("welcome you!", "nice to meet you", "huhuchen@github", "god@heaven")
+
+        print mail_queue.worker()
+        print greet_queue.worker()
+
+    def test_method_job(self):
+        notice = Notice()
+        notice.remind_user.delay("huhuchen")
+
+        print notice_queue.worker()
 
