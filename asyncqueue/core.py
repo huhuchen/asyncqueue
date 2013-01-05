@@ -26,15 +26,18 @@ class Queue(object):
         self._key = "%s%s" % (self.redis_queue_namespace_prefix, self._name)
         return self._key
 
-    def __call__(self):
-        def _func(function):
-            def __func(*arg, **kwarg):
-                job = Job.create(function, arg, kwarg)
-                self.enqueue_job(job)
+    def enqueue(self, func, *args, **kwargs):
+        job = Job.create(func, args, kwargs)
+        self.enqueue_job(job)
 
-            function.delay = __func
-            return function
-        return _func
+    def __call__(self):
+        def wrapper(f):
+            def _wrapper(*args, **kwargs):
+                job = Job.create(f, args, kwargs)
+                self.enqueue_job(job)
+            f.delay = _wrapper
+            return f
+        return wrapper
 
     def enqueue_job(self, job):
         self._connection.enqueue(self.key, job._data)

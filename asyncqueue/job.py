@@ -50,7 +50,7 @@ class Job(object):
 
     def perform(self):
         if self._instance:
-            return getattr(self._instance, self._func_name)
+            return getattr(self._instance, self._func_name)(*self._args, **self._kwargs)
 
         module_name, func_name = self._func_name.rsplit('.', 1)
         module = importlib.import_module(module_name)
